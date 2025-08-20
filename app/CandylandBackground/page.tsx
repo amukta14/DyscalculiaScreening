@@ -1,10 +1,39 @@
 "use client"
 
-import { useEffect, useRef, ReactNode } from "react"
+import { useEffect, useRef, ReactNode, useState } from "react"
 import { motion } from "framer-motion"
+
+interface Sparkle {
+  id: number
+  left: number
+  top: number
+  size: number
+  color: string
+  duration: number
+  delay: number
+}
 
 export default function CandylandBackground({ children }: { children?: ReactNode }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [sparkles, setSparkles] = useState<Sparkle[]>([])
+
+  // Generate sparkles with stable positions
+  useEffect(() => {
+    const colors = [
+      'bg-white', 'bg-yellow-200', 'bg-yellow-100', 
+      'bg-blue-50', 'bg-pink-50', 'bg-purple-100'
+    ]
+    
+    const newSparkles = Array.from({ length: 100 }).map((_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      size: 0.5 + Math.random() * 2,
+      color: colors[Math.floor(Math.random() * colors.length)]
+    }))
+    
+    setSparkles(newSparkles)
+  }, [])
 
   // Chocolate river animation
   useEffect(() => {
@@ -69,42 +98,30 @@ export default function CandylandBackground({ children }: { children?: ReactNode
       {/* Background Layer */}
       <div className="absolute inset-0 pointer-events-none z-0">
         {/* Sugar sparkles */}
-        {Array.from({ length: 100 }).map((_, i) => {
-          // Random sizes for more variety
-          const size = 0.5 + Math.random() * 2;
-          
-          // Colors for sparkles (whites, golds, silvers)
-          const colors = [
-            'bg-white', 'bg-yellow-200', 'bg-yellow-100', 
-            'bg-blue-50', 'bg-pink-50', 'bg-purple-100'
-          ];
-          const color = colors[Math.floor(Math.random() * colors.length)];
-          
-          return (
-            <motion.div
-              key={`sparkle-${i}`}
-              className={`absolute rounded-full ${color}`}
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                width: `${size}px`,
-                height: `${size}px`,
-                zIndex: 5,
-                boxShadow: '0 0 4px 1px rgba(255, 255, 255, 0.7)'
-              }}
-              animate={{
-                opacity: [0, 0.8, 1, 0.8, 0],
-                scale: [0, 1.5, 2, 1.5, 0],
-              }}
-              transition={{
-                duration: 1.5 + Math.random() * 3.5,
-                repeat: Number.POSITIVE_INFINITY,
-                delay: Math.random() * 7,
-                ease: "easeInOut"
-              }}
-            />
-          );
-        })}
+        {sparkles.map((sparkle) => (
+          <motion.div
+            key={`sparkle-${sparkle.id}`}
+            className={`absolute rounded-full ${sparkle.color}`}
+            style={{
+              left: `${sparkle.left}%`,
+              top: `${sparkle.top}%`,
+              width: `${sparkle.size}px`,
+              height: `${sparkle.size}px`,
+              zIndex: 5,
+              boxShadow: '0 0 4px 1px rgba(255, 255, 255, 0.7)'
+            }}
+            animate={{
+              opacity: [0, 0.8, 1, 0.8, 0],
+              scale: [0, 1.5, 2, 1.5, 0],
+            }}
+            transition={{
+              duration: sparkle.duration,
+              repeat: Number.POSITIVE_INFINITY,
+              delay: sparkle.delay,
+              ease: "easeInOut"
+            }}
+          />
+        ))}
 
         {/* Floating candy elements */}
         <motion.div
